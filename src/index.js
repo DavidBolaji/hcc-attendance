@@ -15,9 +15,9 @@ app.use(cors({
 // app use
 app.use(express.json());
 
-// app.get('/api/v1', async (req,res) => {
-//     res.send({message: 'hello'})
-// })
+app.get('/api/v1', async (req,res) => {
+    res.send({message: 'hello'})
+})
 app.use('/api/v1',employeeRouter);
 app.use('/api/v1',attendanceRouter);
 
