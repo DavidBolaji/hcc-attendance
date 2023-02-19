@@ -19,7 +19,7 @@ router.post(
   auth,
   employeeController.update,
 );
-// router.get("user/find/tutors", userController.getTutors);
+router.get("/user/find/all", employeeController.getUserAll);
 // router.delete("user/delete/:userId", auth, userController.deleteUser);
 
 // router.get("user/find/:id", auth, userController.getUser);

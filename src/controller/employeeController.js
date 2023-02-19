@@ -1,3 +1,4 @@
+const Attendance = require("../models/attendanceModel");
 const Employee = require("../models/employeeModel");
 
 exports.register = async (req, res) => {
@@ -48,6 +49,41 @@ exports.logoutAll = async (req, res) => {
     res.status(500).send();
   }
 };
+
+
+// exports.getUserAll = async (req, res) => { 
+//     console.log('enter') 
+//     try {
+//         const usersWithAttendance = await Employee.find();
+//         await usersWithAttendance.populate('attendance'); // populate the attendance.employee reference with the name of the employee
+  
+//       res.status(200).send(usersWithAttendance);
+//     } catch (error) {
+//       res.status(400).send({ error: "User not found" });
+//     }
+//   };
+
+
+exports.getUserAll = async (req, res) => { 
+    try {
+        const users = await Employee.find({}, '-password -tokens');
+        const attendance = await Attendance.find();
+        const usersWithAttendance = users.map((user) => {
+          const userAttendance = attendance.filter((att) => att.employeeId.toString() === user._id.toString());
+          return {
+            ...user.toObject(),
+            attendance: userAttendance,
+          };
+        });
+
+        res.status(200).send(usersWithAttendance);
+
+    } catch (e) {
+        res.status(400).send({ error: "User not found" });
+    }
+
+    // Map attendance to employee
+  };
 
 exports.getUser = async (req, res) => {
   const { id } = req.params;

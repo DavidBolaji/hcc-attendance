@@ -13,11 +13,11 @@ const employeeSchema = new mongoose.Schema({
         trim: true,
         lowercase: true,
         unique: true,
-        // validate(value) {
-        //   if (!validator.isEmail(value)) {
-        //     throw new Error("Please enter a valid email!");
-        //   }
-        // },
+        validate(value) {
+          if (!validator.isEmail(value)) {
+            throw new Error("Please enter a valid email!");
+          }
+        },
       },
     password: {
         type: String,
@@ -28,6 +28,10 @@ const employeeSchema = new mongoose.Schema({
     },
     address: {
       type: String,
+    },
+    qr: {type: String},
+    DOB: {
+      type: Date,
     },
     tokens: [
         {
@@ -41,6 +45,12 @@ const employeeSchema = new mongoose.Schema({
   {
     timestamps: true,
   });
+
+  employeeSchema.virtual('attendance', {
+    ref: 'Attendance',
+    localField: '_id',
+    foreignField: 'employeeId'
+  })
 
   employeeSchema.methods.genAuthToken = async function () {
     const user = this;
