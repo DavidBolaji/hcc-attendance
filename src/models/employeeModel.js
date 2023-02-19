@@ -29,7 +29,7 @@ const employeeSchema = new mongoose.Schema({
     address: {
       type: String,
     },
-    qr: {type: String},
+    qr: {type: String, default: "https://hcc.com"},
     DOB: {
       type: Date,
     },
