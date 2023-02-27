@@ -10,6 +10,11 @@ router.get(
     res.send({ message: 'user route welcome'})
    }
   );
+
+  router.get(
+    "/user/all",
+    employeeController.getUsers,
+  );
 router.post(
   "/user/register",
   employeeController.register,
@@ -19,10 +24,15 @@ router.post(
   auth,
   employeeController.update,
 );
+router.put(
+  "/user/update",
+  auth,
+  employeeController.update,
+);
 router.get("/user/find/all", employeeController.getUserAll);
 // router.delete("user/delete/:userId", auth, userController.deleteUser);
 
-// router.get("user/find/:id", auth, userController.getUser);
+router.get("/user/find/:id", auth, employeeController.getUser);
 router.post("/user/login", employeeController.login);
 router.post("/user/logout", auth, employeeController.logout);
 

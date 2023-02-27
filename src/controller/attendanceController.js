@@ -16,25 +16,20 @@ exports.create = async (req, res) => {
     const sort = req.query.sort || 'createdAt';
     const direction = req.query.direction || 'desc';
     const filter = req.query.filter || '';
-
-    console.log(filter)
+    const end = req.query.end || '';
   
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
   
     const results = {};
+
   
     try {
       if (filter) {
         const startDate = new Date(filter);
-        startDate.setHours(0);
-        startDate.setMinutes(0);
-        startDate.setSeconds(0);
-        startDate.setMilliseconds(0);
 
-        const endDate =  new Date(filter);
-        endDate.setDate(endDate.getDate() + 1);
-        
+        const endDate =  new Date(end);
+
         results.totalCount = await Attendance.countDocuments({
             createdAt: {$gte: startDate, $lt: endDate }
         });
@@ -42,6 +37,7 @@ exports.create = async (req, res) => {
           .sort({ [sort]: direction })
           .limit(limit)
           .skip(startIndex)
+          .populate('employeeId')
           .exec();
       } else {
         results.totalCount = await Attendance.countDocuments({});
@@ -49,6 +45,7 @@ exports.create = async (req, res) => {
           .sort({ [sort]: direction })
           .limit(limit)
           .skip(startIndex)
+          .populate('employeeId')
           .exec();
       }
   
@@ -78,6 +75,17 @@ exports.create = async (req, res) => {
       res.status(500).json({ error: 'Server error' });
     }
   };
+
+  exports.getAttendanceUser = async (req,res) => {
+        try {
+            const usersWithAttendance = await Attendance.find({createdAt});
+            await usersWithAttendance.populate('attendance'); // populate the attendance.employee reference with the name of the employee
+      
+          res.status(200).send(usersWithAttendance);
+        } catch (error) {
+          res.status(400).send({ error: "User not found" });
+        }
+  }
 
   exports.single = async (req, res) => {
     res.json(res.attendance);

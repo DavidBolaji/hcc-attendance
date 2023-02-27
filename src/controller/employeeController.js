@@ -4,11 +4,11 @@ const Employee = require("../models/employeeModel");
 exports.register = async (req, res) => {
   try {
     const user = new Employee({ ...req.body });
-    await user.save();
-    console.log(user)
-    const token = await user.genAuthToken();
+    const newUser = await user.save();
+    const QRuser = await Employee.findByIdAndUpdate(newUser._id, {qr: process.env.FRONT_END_URL+'?id='+newUser._id},{new:true})
+    const token = await QRuser.genAuthToken();
 
-    await user.save();
+    await QRuser.save();
 
     res.status(201).send({ user, token });
   } catch (e) {
@@ -51,39 +51,98 @@ exports.logoutAll = async (req, res) => {
 };
 
 
-// exports.getUserAll = async (req, res) => { 
-//     console.log('enter') 
-//     try {
-//         const usersWithAttendance = await Employee.find();
-//         await usersWithAttendance.populate('attendance'); // populate the attendance.employee reference with the name of the employee
-  
-//       res.status(200).send(usersWithAttendance);
-//     } catch (error) {
-//       res.status(400).send({ error: "User not found" });
-//     }
-//   };
+// GET /users
+// Retrieve all users
+// Example: /users?page=1&limit=10&sort=name&search=John
+exports.getUsers = async (req, res) => {
+  const { page = 1, limit = 10, sort = 'createdAt', search = '' } = req.query;
+
+  const options = {
+    page: parseInt(page, 10),
+    limit: parseInt(limit, 10),
+    sort: { [sort]: 1 },
+    collation: {
+      locale: 'en',
+    },
+  };
+
+  const query = {
+    $or: [
+      { name: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
+    ],
+  };
+
+  try {
+    const users = await Employee.paginate(query, options);
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 
 exports.getUserAll = async (req, res) => { 
-    try {
-        const users = await Employee.find({}, '-password -tokens');
-        const attendance = await Attendance.find();
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const sort = req.query.sort || 'createdAt';
+  const direction = req.query.direction || 'desc';
+  const filter = req.query.filter || '';
+  const end = req.query.end || '';
+
+  const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+     try {
+      const startDate = new Date(filter);
+
+      const endDate =  new Date(end);
+        const totalCount = await Employee.find({}, '-password -tokens').count()
+        const users = await Employee.find({}, '-password -tokens')
+        .sort({ [sort]: direction })
+        .limit(limit)
+        .skip(startIndex)
+        .exec()
+        
+        const attendance = await Attendance.find({createdAt: {$gte: startDate, $lt: endDate }});
         const usersWithAttendance = users.map((user) => {
           const userAttendance = attendance.filter((att) => att.employeeId.toString() === user._id.toString());
           return {
             ...user.toObject(),
             attendance: userAttendance,
           };
-        });
-
-        res.status(200).send(usersWithAttendance);
+        })
+        
+        
+        res.status(200).send({data: usersWithAttendance, totalCount });
 
     } catch (e) {
         res.status(400).send({ error: "User not found" });
     }
-
-    // Map attendance to employee
+   
   };
+
+
+// exports.getUserAll = async (req, res) => { 
+//     try {
+//         const users = await Employee.find({}, '-password -tokens');
+//         const attendance = await Attendance.find();
+//         const usersWithAttendance = users.map((user) => {
+//           const userAttendance = attendance.filter((att) => att.employeeId.toString() === user._id.toString());
+//           return {
+//             ...user.toObject(),
+//             attendance: userAttendance,
+//           };
+//         });
+
+//         res.status(200).send(usersWithAttendance);
+
+//     } catch (e) {
+//         res.status(400).send({ error: "User not found" });
+//     }
+
+//     // Map attendance to employee
+//   };
 
 exports.getUser = async (req, res) => {
   const { id } = req.params;
@@ -102,64 +161,39 @@ exports.getUser = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  try {
-    const user = await Employee.find({ _id: req.user._id });
-
-    const userObjs = Object.keys(req.body);
-
-    const allowedArr = ["name", "img", "password", "tags", "description"];
-    const isValid = userObjs.every((userObj) => allowedArr.includes(userObj));
-
-    // console.log(user);
-
-    if (!isValid) {
-      res.status(400).send({ error: "Invalid Updates" });
-    }
-
-      const deleteRes = await cloudinary.uploader.destroy(
-        `tec-client/user/${user[0]._id}`
-      );
-
-      console.log(deleteRes);
-
-      const uploadRes = await cloudinary.uploader.upload(req.file.path, {
-        public_id: user[0]._id,
-        folder: "tec-client/user",
-        format: "png",
-        transformation: [
-          {
-            width: 300,
-            height: 200,
-            crop: "fill",
-            gravity: "face",
-          },
-        ],
-      });
-
-      console.log(uploadRes);
-
-      const newValueOj = {
-        ...req.body,
-      };
-
-      userObjs.forEach((userObj) => {
-        if (userObj === "tags") {
-          let newTag;
-          newTag = req.body[userObj].split(",");
-          user[0][userObj] = newTag;
-        } else {
-          user[0][userObj] = newValueOj[userObj];
-        }
-      });
-
-      user[0]["img"] = uploadRes.secure_url;
-
-      await user[0].save();
-
+    const url = req.query.url;
+    try {
+      const user = await Employee.findOneAndUpdate({_id:req.query.url.split('=')[1] }, {qr: url},{new: true})
       return res.status(200).send(user);
+  
+    } catch (e) {
+      res.status(400).send(e);
+    }
+  };
 
-  } catch (e) {
-    res.status(400).send(e);
-  }
-};
+// exports.update = async (req, res) => {
+//   try {
+//     const user = await Employee.find({ _id: req.user._id });
+
+//     const userObjs = Object.keys(req.body);
+
+//     const allowedArr = ["name", "img", "password", "tags", "description"];
+//     const isValid = userObjs.every((userObj) => allowedArr.includes(userObj));
+
+//     // console.log(user);
+
+//     if (!isValid) {
+//       res.status(400).send({ error: "Invalid Updates" });
+//     }
+
+
+
+//       await user[0].save();
+
+//       return res.status(200).send(user);
+
+//   } catch (e) {
+//     res.status(400).send(e);
+//   }
+// };
 

@@ -2,6 +2,8 @@ const mongoose = require('../db/mongoose');
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const mongoosePaginate = require('mongoose-paginate-v2');
+
 // Define the employee schema
 const employeeSchema = new mongoose.Schema({
     name: {
@@ -44,13 +46,10 @@ const employeeSchema = new mongoose.Schema({
     },
   {
     timestamps: true,
+    strictPopulate: false
   });
 
-  employeeSchema.virtual('attendance', {
-    ref: 'Attendance',
-    localField: '_id',
-    foreignField: 'employeeId'
-  })
+
 
   employeeSchema.methods.genAuthToken = async function () {
     const user = this;
@@ -99,6 +98,14 @@ const employeeSchema = new mongoose.Schema({
   
     return userObject;
   };
+
+  employeeSchema.virtual("attendances", {
+    ref: "Attendance",
+    localField: "_id",
+    foreignField: 'employeeId'
+  })
+
+  employeeSchema.plugin(mongoosePaginate);
 
   // Define the models
 const Employee = mongoose.model('Employee', employeeSchema);

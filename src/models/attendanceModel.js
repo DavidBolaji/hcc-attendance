@@ -13,6 +13,7 @@ const attendanceSchema = new mongoose.Schema({
   },
 },{
     timestamps:true,
+    strictPopulate: false 
 });
 
   // Define the models
