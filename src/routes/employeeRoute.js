@@ -32,7 +32,7 @@ router.put(
 router.get("/user/find/all", employeeController.getUserAll);
 // router.delete("user/delete/:userId", auth, userController.deleteUser);
 
-router.get("/user/find/:id", auth, employeeController.getUser);
+router.get("/user/find/:id", employeeController.getUser);
 router.post("/user/login", employeeController.login);
 router.post("/user/logout", auth, employeeController.logout);
 
