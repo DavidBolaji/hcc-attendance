@@ -5,7 +5,7 @@ exports.register = async (req, res) => {
   try {
     const user = new Employee({ ...req.body });
     const newUser = await user.save();
-    const QRuser = await Employee.findByIdAndUpdate(newUser._id, {qr: process.env.FRONT_END_URL+'?id='+newUser._id},{new:true})
+    const QRuser = await Employee.findByIdAndUpdate(newUser._id, {qr: process.env.FRONT_END_URL+'/'+newUser._id},{new:true})
     const token = await QRuser.genAuthToken();
 
     await QRuser.save();

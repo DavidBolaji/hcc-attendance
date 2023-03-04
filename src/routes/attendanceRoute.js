@@ -4,7 +4,7 @@ const attandanceController = require('../controller/attendanceController');
 const getAttendance = require('../middleware/attendance');
 
 // await cloudinary.uploader.upload(str, {})
-router.post('/attendance/create', attandanceController.create)
+router.post('/attendance/create/:id', attandanceController.create)
 router.get('/attendance/find', attandanceController.read);
 router.delete('/attendance/delete/:id', getAttendance, attandanceController.delete);
 router.put('/attendance/update/:Id', getAttendance, attandanceController.update);
