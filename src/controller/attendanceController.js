@@ -1,9 +1,8 @@
 const Attendance = require("../models/attendanceModel");
 
 exports.create = async (req, res) => {
-  const {id} = req.params.id;
     try {
-      const attendance = new Attendance({employeeId: id});
+      const attendance = new Attendance({...req.body});
       const savedAttendance = await attendance.save();
       res.json(savedAttendance);
     } catch (err) {
