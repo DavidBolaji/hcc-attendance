@@ -6,7 +6,19 @@ const mongoosePaginate = require('mongoose-paginate-v2');
 
 // Define the employee schema
 const employeeSchema = new mongoose.Schema({
-    name: {
+    firstName: {
+      type: String,
+    },
+    lastName: {
+      type: String
+    },
+    gender: {
+      type: String
+    },
+    nbusStop: {
+      type: String,
+    },
+    addressGroup: {
       type: String,
     },
     email: {
@@ -15,11 +27,11 @@ const employeeSchema = new mongoose.Schema({
         trim: true,
         lowercase: true,
         unique: true,
-        validate(value) {
-          if (!validator.isEmail(value)) {
-            throw new Error("Please enter a valid email!");
-          }
-        },
+        // validate(value) {
+        //   if (!validator.isEmail(value)) {
+        //     throw new Error("Please enter a valid email!");
+        //   }
+        // },
       },
     password: {
         type: String,
@@ -33,8 +45,17 @@ const employeeSchema = new mongoose.Schema({
     },
     qr: {type: String, default: "https://hcc.com"},
     DOB: {
-      type: Date,
+      type: String,
     },
+    month: {
+      type: String
+    },
+    occupation: {
+      type:String
+    },
+    role: {
+      type: ['member','worker']
+    }, 
     tokens: [
         {
           token: {
