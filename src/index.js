@@ -5,7 +5,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000 
 const attendanceRouter = require('./routes/attendanceRoute');
-const employeeRouter = require('./routes/employeeRoute');
+const employeeRouter = require('./routes/employeeRoute'); 
 
 const cors = require('cors')
 app.use(cors({

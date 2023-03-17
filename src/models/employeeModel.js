@@ -54,7 +54,7 @@ const employeeSchema = new mongoose.Schema({
       type:String
     },
     role: {
-      type: ['member','worker']
+      type: ['member','worker','Admin']
     }, 
     tokens: [
         {
@@ -85,13 +85,17 @@ const employeeSchema = new mongoose.Schema({
   
     try {
       if (!user) {
-        throw new Error("Unable to login");
+       user.err = 'Unable to login'; 
       }
   
       const isMatch = await bcrypt.compare(password, user.password);
   
       if (!isMatch) {
-        throw new Error("Unable to login");
+       user.err = 'Wrong email or password';  
+      }
+
+      if(user.role[0] !== 'Admin') {
+        user.err = 'Unauthorized';
       }
     } catch (e) {
       return e;

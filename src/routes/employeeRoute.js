@@ -15,6 +15,11 @@ router.get(
     "/user/all",
     employeeController.getUsers,
   );
+
+  router.get(
+    "/user/find/all2",
+    employeeController.getUserAll2,
+  );
 router.post(
   "/user/register",
   employeeController.register,

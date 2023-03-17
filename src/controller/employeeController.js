@@ -17,20 +17,29 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
+  
+ 
   try {
     const user = await Employee.validateUser(req.body.email, req.body.password);
+    if(user.err) {
+      console.log(user.err)
+      return res.status(400).send({ e: user.err });
+    }
     const token = await user.genAuthToken();
     res.send({ user, token });
   } catch (e) {
-    res.status(400).send({ e: "Unable to login" });
+    res.status(400).send({ e: user.err });
   }
 };
 
 exports.logout = async (req, res) => {
+
   try {
     req.user.tokens = req.user.tokens.filter((token) => {
       return req.token !== token.token;
     });
+
+    console.log(req.user.tokens)
 
     await req.user.save();
     res.send(req.user);
@@ -123,6 +132,8 @@ exports.getUserAll = async (req, res) => {
   };
 
 
+
+
 // exports.getUserAll = async (req, res) => { 
 //     try {
 //         const users = await Employee.find({}, '-password -tokens');
@@ -144,6 +155,17 @@ exports.getUserAll = async (req, res) => {
 //     // Map attendance to employee
 //   };
 
+exports.getUserAll2 = async (req, res) => {
+  try {
+    const user = await Employee.find({});
+
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(400).send({ error: "User not found" });
+  }
+};
+
+
 exports.getUser = async (req, res) => {
   const { id } = req.params;
 
@@ -154,7 +176,7 @@ exports.getUser = async (req, res) => {
       throw new Error();
     }
 
-    res.status(200).send(user);
+    res.status(200).send(user)
   } catch (error) {
     res.status(400).send({ error: "User not found" });
   }
