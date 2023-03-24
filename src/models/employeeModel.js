@@ -25,6 +25,7 @@ const employeeSchema = new mongoose.Schema(
     email: {
       type: String,
       // required: [true, "A user must have an email"],
+      default: "Nil",
       trim: true,
       lowercase: true,
       unique: true,
