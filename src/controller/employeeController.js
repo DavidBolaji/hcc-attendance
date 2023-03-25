@@ -10,11 +10,11 @@ exports.register = async (req, res) => {
       { qr: process.env.FRONT_END_URL + "/" + newUser._id },
       { new: true }
     );
-    const token = await QRuser.genAuthToken();
+    // const token = await QRuser.genAuthToken();
 
     await QRuser.save();
 
-    res.status(201).send({ user, token });
+    res.status(201).send({ user });
   } catch (e) {
     res.status(400).send({ message: e });
   }
@@ -23,25 +23,27 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const user = await Employee.validateUser(req.body.email, req.body.password);
-    if (user.err) {
-      console.log(user.err);
-      return res.status(400).send({ e: user.err });
+    if (user === "Wrong email or password") {
+      return res.status(403).send({ e: user });
     }
+
+    if (user === "Unauthorized") {
+      return res.status(401).send({ e: user });
+    }
+
     const token = await user.genAuthToken();
-    res.send({ user, token });
+
+    console.log(user);
+    console.log(token);
+    res.status(200).send({ user, token });
   } catch (e) {
-    res.status(400).send({ e: user.err });
+    res.status(400).send({ e });
   }
 };
 
 exports.logout = async (req, res) => {
   try {
-    req.user.tokens = req.user.tokens.filter((token) => {
-      return req.token !== token.token;
-    });
-
-    await req.user.save();
-    res.send(req.user);
+    res.status(200);
   } catch (e) {
     res.status(500).send();
   }

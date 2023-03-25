@@ -12,12 +12,14 @@ const employeeSchema = new mongoose.Schema(
     },
     lastName: {
       type: String,
+      trim: true,
     },
     gender: {
       type: String,
     },
     nbusStop: {
       type: String,
+      trim: true,
     },
     addressGroup: {
       type: String,
@@ -44,6 +46,7 @@ const employeeSchema = new mongoose.Schema(
     },
     address: {
       type: String,
+      trim: true,
     },
     qr: { type: String, default: "https://hcc.com" },
     DOB: {
@@ -51,21 +54,15 @@ const employeeSchema = new mongoose.Schema(
     },
     month: {
       type: String,
+      trim: true,
     },
     occupation: {
       type: String,
+      trim: true,
     },
     role: {
       type: ["member", "worker", "Admin"],
     },
-    tokens: [
-      {
-        token: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
   },
   {
     timestamps: true,
@@ -76,30 +73,28 @@ const employeeSchema = new mongoose.Schema(
 employeeSchema.methods.genAuthToken = async function () {
   const user = this;
   const token = jwt.sign({ _id: user._id.toString() }, process.env.SECRET);
-  user.tokens = user.tokens.concat({ token });
-  await user.save();
+  // console.log(user.tokens);
+  // user.tokens.push({ token });
+  // console.log(user.tokens);
+  // await user.save();
   return token;
 };
 
 employeeSchema.statics.validateUser = async (email, password) => {
   const user = await Employee.findOne({ email });
 
-  try {
-    if (!user) {
-      user.err = "Unable to login";
-    }
+  if (!user) {
+    return "Wrong email or password";
+  }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!isMatch) {
-      user.err = "Wrong email or password";
-    }
+  if (!isMatch) {
+    return "Wrong email or password";
+  }
 
-    if (user.role[0] !== "Admin") {
-      user.err = "Unauthorized";
-    }
-  } catch (e) {
-    return e;
+  if (user.role[0] !== "Admin") {
+    return "Unauthorized";
   }
 
   return user;

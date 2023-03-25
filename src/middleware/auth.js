@@ -1,33 +1,31 @@
-const jwt = require('jsonwebtoken');
-const Employee = require('../models/employeeModel');
+const jwt = require("jsonwebtoken");
+const Employee = require("../models/employeeModel");
 
 const auth = async (req, res, next) => {
-   
-    try {
-        const token = req.header('Authorization').replace('Bearer ', '');
-       
-        const decoded = jwt.verify(token, process.env.SECRET);
+  try {
+    const token = req.header("Authorization").replace("Bearer ", "");
 
-        // console.log(token);
-        // console.log(decoded._id);
-        
-        const user = await Employee.findOne({ _id: decoded._id, 'tokens.token': token});
+    const decoded = jwt.verify(token, process.env.SECRET);
 
-        // console.log(user);
+    // console.log(token);
+    // console.log(decoded._id);
 
-        // console.log(!user)
+    const user = await Employee.findOne({ _id: decoded._id });
 
-        if(!user) throw new Error();
+    // console.log(user);
 
-        req.user = user;
-        req.token = token;
+    // console.log(!user)
 
-        // console.log(req.token);
-        next();
+    if (!user) throw new Error();
 
-    } catch (e) {
-        res.status(401).send({error: 'user not authenticated'})
-    }
-}
+    req.user = user;
+    req.token = token;
+
+    // console.log(req.token);
+    next();
+  } catch (e) {
+    res.status(401).send({ error: "user not authenticated" });
+  }
+};
 
 module.exports = auth;

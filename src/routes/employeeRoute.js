@@ -4,40 +4,20 @@ const employeeController = require("../controller/employeeController");
 const auth = require("../middleware/auth");
 
 // await cloudinary.uploader.upload(str, {})
-router.get(
-    "/user",
-   (req,res) => {
-    res.send({ message: 'user route welcome'})
-   }
-  );
+router.get("/user", (req, res) => {
+  res.send({ message: "user route welcome" });
+});
 
-  router.get(
-    "/user/all",
-    employeeController.getUsers,
-  );
+router.get("/user/all", auth, employeeController.getUsers);
 
-  router.get(
-    "/user/find/all2",
-    employeeController.getUserAll2,
-  );
-router.post(
-  "/user/register",
-  employeeController.register,
-);
-router.post(
-  "/user/update",
-  auth,
-  employeeController.update,
-);
-router.put(
-  "/user/update",
-  auth,
-  employeeController.update,
-);
-router.get("/user/find/all", employeeController.getUserAll);
+router.get("/user/find/all2", employeeController.getUserAll2);
+router.post("/user/register", employeeController.register);
+router.post("/user/update", auth, employeeController.update);
+router.put("/user/update", auth, employeeController.update);
+router.get("/user/find/all", auth, employeeController.getUserAll);
 // router.delete("user/delete/:userId", auth, userController.deleteUser);
 
-router.get("/user/find/:id", employeeController.getUser);
+router.get("/user/find/:id", auth, employeeController.getUser);
 router.post("/user/login", employeeController.login);
 router.post("/user/logout", auth, employeeController.logout);
 
