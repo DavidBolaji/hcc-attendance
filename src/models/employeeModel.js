@@ -12,22 +12,21 @@ const employeeSchema = new mongoose.Schema(
     },
     lastName: {
       type: String,
-      trim: true,
+      // trim: true,
     },
     gender: {
       type: String,
     },
     nbusStop: {
       type: String,
-      trim: true,
+      // trim: true,
     },
     addressGroup: {
       type: String,
     },
     email: {
       type: String,
-      // required: [true, "A user must have an email"],
-      default: "Nil",
+      required: [true, "A user must have an email"],
       trim: true,
       lowercase: true,
       unique: true,
@@ -46,7 +45,7 @@ const employeeSchema = new mongoose.Schema(
     },
     address: {
       type: String,
-      trim: true,
+      // trim: true,
     },
     qr: { type: String, default: "https://hcc.com" },
     DOB: {
@@ -54,7 +53,7 @@ const employeeSchema = new mongoose.Schema(
     },
     month: {
       type: String,
-      trim: true,
+      // trim: true,
     },
     occupation: {
       type: String,

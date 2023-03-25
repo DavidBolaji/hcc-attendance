@@ -33,8 +33,8 @@ exports.login = async (req, res) => {
 
     const token = await user.genAuthToken();
 
-    console.log(user);
-    console.log(token);
+    // console.log(user);
+    // console.log(token);
     res.status(200).send({ user, token });
   } catch (e) {
     res.status(400).send({ e });
