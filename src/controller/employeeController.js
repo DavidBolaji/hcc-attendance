@@ -74,6 +74,7 @@ exports.getUsers = async (req, res) => {
     collation: {
       locale: "en",
     },
+    select: "firstName lastName qr",
   };
 
   const query = {
@@ -155,12 +156,28 @@ exports.getUserAll = async (req, res) => {
 //   };
 
 exports.getUserAll2 = async (req, res) => {
-  try {
-    const user = await Employee.find({});
+  const { page = 1, limit = 10, sort = "createdAt", search = "" } = req.query;
 
-    res.status(200).send(user);
-  } catch (error) {
-    res.status(400).send({ error: "User not found" });
+  const query = {
+    $or: [
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+    ],
+  };
+
+  const projection = {
+    firstName: 1,
+    lastName: 1,
+    qr: 1,
+    _id: 1,
+  };
+
+  try {
+    const users = await Employee.find(query, projection).sort(sort);
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -168,7 +185,7 @@ exports.getUser = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const user = await Employee.findById(id);
+    const user = await Employee.findById(id).select("firstName lastName qr");
 
     if (!user) {
       throw new Error();
