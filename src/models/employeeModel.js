@@ -48,6 +48,9 @@ const employeeSchema = new mongoose.Schema(
       // trim: true,
     },
     qr: { type: String, default: "https://hcc.com" },
+    image: {
+      type: String,
+    },
     DOB: {
       type: String,
     },

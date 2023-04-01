@@ -12,9 +12,10 @@ router.get("/user/all", employeeController.getUsers);
 
 router.get("/user/find/all2", employeeController.getUserAll2);
 router.post("/user/register", employeeController.register);
+router.post("/user/generate/:id", employeeController.generate);
 router.post("/user/update", auth, employeeController.update);
 router.put("/user/update", auth, employeeController.update);
-router.get("/user/find/all", auth, employeeController.getUserAll);
+router.get("/user/find/all", employeeController.getUserAll);
 // router.delete("user/delete/:userId", auth, userController.deleteUser);
 
 router.get("/user/find/:id", auth, employeeController.getUser);

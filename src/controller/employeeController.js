@@ -1,7 +1,11 @@
 const Attendance = require("../models/attendanceModel");
 const Employee = require("../models/employeeModel");
+const qrcode = require("qrcode");
+const fs = require("fs");
+const { cloudinary } = require("../utils/cloudinary");
 
 exports.register = async (req, res) => {
+  console.log("entered");
   try {
     const user = new Employee({ ...req.body });
     const newUser = await user.save();
@@ -10,12 +14,57 @@ exports.register = async (req, res) => {
       { qr: process.env.FRONT_END_URL + "/" + newUser._id },
       { new: true }
     );
-    // const token = await QRuser.genAuthToken();
+
+    const qrImage = await qrcode.toFile(
+      `${newUser._id}.png`,
+      process.env.FRONT_END_URL + "/" + newUser._id
+    );
+
+    // upload the image to cloudinary
+    const cloudinaryResponse = await cloudinary.uploader.upload(
+      `${newUser._id}.png`,
+      { folder: "hcc_qr_images", public_id: newUser._id }
+    );
+
+    // update the user's qrimage field with the cloudinary URL
+    QRuser.image = cloudinaryResponse.secure_url;
+
+    // delete image
+    fs.unlinkSync(`${newUser._id}.png`);
 
     await QRuser.save();
 
     res.status(201).send({ user });
   } catch (e) {
+    res.status(400).send({ message: e });
+  }
+};
+
+exports.generate = async (req, res) => {
+  try {
+    const QRuser = await Employee.findById(req.params.id);
+    await qrcode.toFile(
+      `${req.params.id}.png`,
+      process.env.FRONT_END_URL + "/" + req.params.id
+    );
+
+    // upload the image to cloudinary
+    const cloudinaryResponse = await cloudinary.uploader.upload(
+      `${req.params.id}.png`,
+      { folder: "hcc_qr_images", public_id: req.params.id }
+    );
+
+    // update the user's qrimage field with the cloudinary URL
+    QRuser.image = cloudinaryResponse.secure_url;
+
+    // delete image
+    fs.unlinkSync(`${req.params.id}.png`);
+
+    await QRuser.save();
+
+    res.status(201).send({ message: "Qr generation successful" });
+  } catch (e) {
+    console.log(e);
     res.status(400).send({ message: e });
   }
 };
@@ -33,8 +82,6 @@ exports.login = async (req, res) => {
 
     const token = await user.genAuthToken();
 
-    // console.log(user);
-    // console.log(token);
     res.status(200).send({ user, token });
   } catch (e) {
     res.status(400).send({ e });
@@ -64,17 +111,24 @@ exports.logoutAll = async (req, res) => {
 // Retrieve all users
 // Example: /users?page=1&limit=10&sort=name&search=John
 exports.getUsers = async (req, res) => {
-  const { page = 1, limit = 10, sort = "createdAt", search = "" } = req.query;
+  const {
+    page = 1,
+    limit = 10,
+    sort = "firstName",
+    search = "",
+    filter = "",
+    end = "",
+  } = req.query;
 
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
-    // sort: { [sort]: 1 },
+    sort: { [sort]: 1 },
     // sort: { firstName: 1 },
     collation: {
       locale: "en",
     },
-    select: "firstName lastName qr",
+    select: "firstName lastName qr image createdAt",
   };
 
   const query = {
@@ -83,6 +137,13 @@ exports.getUsers = async (req, res) => {
       { email: { $regex: search, $options: "i" } },
     ],
   };
+
+  if (filter !== "" && end !== "") {
+    const startDate = new Date(filter);
+    const endDate = new Date(end);
+
+    query.createdAt = { $gte: startDate, $lte: endDate };
+  }
 
   try {
     const users = await Employee.paginate(query, options);
@@ -116,7 +177,7 @@ exports.getUserAll = async (req, res) => {
       .exec();
 
     const attendance = await Attendance.find({
-      createdAt: { $gte: startDate, $lt: endDate },
+      createdAt: { $gte: startDate, $lte: endDate },
     });
     const usersWithAttendance = users.map((user) => {
       const userAttendance = attendance.filter(
